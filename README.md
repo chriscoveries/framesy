@@ -24,6 +24,27 @@ dotnet publish .\Framesy.csproj -c Release -r win-x64 --self-contained false -p:
 .\dist\Framesy.exe
 ```
 
+## Windows toolkit ZIP
+
+Run the packaging script from a source checkout with the .NET 8 SDK:
+
+```powershell
+.\Pack-Framesy.ps1 -IncludeCompanionTools
+```
+
+Extract `dist\Framesy-toolkit-win-x64.zip` and run `Framesy.exe`. The ZIP requires the .NET 8 Desktop Runtime and includes the CPU boost script, the Green Curve installer for NVIDIA voltage/frequency curves and power limits, and the portable Intel PresentMon CLI for per-app frame analysis. The packer verifies both companion downloads against pinned SHA-256 checksums. Windows Performance Toolkit adds GPUView and WPA for deeper ETW analysis. [Green Curve](https://github.com/aufkrawall/green-curve) · [PresentMon](https://github.com/GameTechDev/PresentMon) · [Windows Performance Toolkit](https://learn.microsoft.com/en-us/windows-hardware/test/wpt/)
+
+## CPU boost on Windows
+
+```powershell
+.\Manage-CpuBoost.ps1
+.\Manage-CpuBoost.ps1 -Boost Enabled -MaxMHz 4800 -WhatIf
+.\Manage-CpuBoost.ps1 -Boost Enabled -MaxMHz 4800
+.\Manage-CpuBoost.ps1 -RestoreFrom C:\path\to\backup.json
+```
+
+The first command reports the current AC boost mode and frequency caps. Remove `-WhatIf` to apply a change. Each change saves a JSON snapshot and reads the settings back. Choose a cap appropriate for your processor. The cap is a ceiling in the active Windows plan, and actual boost still depends on hardware, workload, cooling, and firmware power limits. CPU package power limits such as PL1 and PL2 are set separately in firmware. [Microsoft boost policy](https://learn.microsoft.com/en-us/windows-hardware/customize/power-settings/options-for-perf-state-engine-perfboostmode) · [Maximum frequency setting](https://learn.microsoft.com/en-us/windows-hardware/customize/power-settings/options-for-perf-state-engine-maxfrequency)
+
 ## Case study · Desktop stutter from an Intel GPU wake-up
 
 On a Windows 10 system, both displays were connected to an RTX 3070 while the Intel UHD 770 remained enabled. Framesy showed repeated gaps of roughly 70 ms. A separate ETW capture with Framesy closed matched 55 of 130 late DWM renders to the Intel GPU waking from D3 to D0.
